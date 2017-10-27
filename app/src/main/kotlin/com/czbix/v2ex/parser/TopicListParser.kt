@@ -4,7 +4,7 @@ import com.czbix.v2ex.common.UserState
 import com.czbix.v2ex.common.exception.FatalException
 import com.czbix.v2ex.helper.JsoupObjects
 import com.czbix.v2ex.model.*
-import com.czbix.v2ex.ui.loader.TopicListLoader
+import com.czbix.v2ex.ui.model.TopicListViewModel.TopicList
 import com.google.common.base.Preconditions
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -15,34 +15,32 @@ object TopicListParser : Parser() {
     private val PATTERN_REPLY_TIME = Pattern.compile("•\\s*(.+?)(?:\\s+•|$)")
 
     @JvmStatic
-    fun parseDoc(doc: Document, page: Page): TopicListLoader.TopicList {
+    fun parseDoc(doc: Document, page: Page): TopicList {
         val contentBox = JsoupObjects(doc).bfs("body").child("#Wrapper").child(".content").child("#Main").child(".box").first()
 
-        if (page is Node) {
-            return parseDocForNode(contentBox, page)
-        } else if (page is Tab || Page.PAGE_FAV_TOPIC == page) {
-            return parseDocForTab(contentBox)
-        } else {
-            throw IllegalArgumentException("unknown page type: " + page)
+        return when (page) {
+            is Node -> parseDocForNode(contentBox, page)
+            is Tab, Page.PAGE_FAV_TOPIC -> parseDocForTab(contentBox)
+            else -> throw IllegalArgumentException("unknown page type: " + page)
         }
     }
 
-    private fun parseDocForTab(contentBox: Element): TopicListLoader.TopicList {
+    private fun parseDocForTab(contentBox: Element): TopicList {
         val elements = JsoupObjects(contentBox).child(".item").child("table").child("tbody").child("tr")
         return elements.map {
             parseItemForTab(it)
         }.let {
-            TopicListLoader.TopicList(it, false)
+            TopicList(it, false)
         }
     }
 
-    private fun parseDocForNode(contentBox: Element, node: Node): TopicListLoader.TopicList {
+    private fun parseDocForNode(contentBox: Element, node: Node): TopicList {
         val (favorited, once) = parseFavorited(contentBox)
         val elements = JsoupObjects(contentBox).child("#TopicsNode").child(".cell").child("table").child("tbody").child("tr")
         return elements.map {
             parseItemForNode(it, node)
         }.let {
-            TopicListLoader.TopicList(it, favorited, once)
+            TopicList(it, favorited, once)
         }
     }
 
