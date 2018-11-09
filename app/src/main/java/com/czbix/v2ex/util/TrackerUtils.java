@@ -1,68 +1,56 @@
 package com.czbix.v2ex.util;
 
-import android.content.Context;
-
-import com.czbix.v2ex.BuildConfig;
-import com.czbix.v2ex.R;
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Logger;
-import com.google.android.gms.analytics.Tracker;
-import com.google.common.base.Preconditions;
-
-import java.util.Map;
-
 public class TrackerUtils {
-    private static GoogleAnalytics mAnalytics;
-    private static Tracker mTracker;
-
-    public static void init(Context context) {
-        Preconditions.checkState(mAnalytics == null, "can't init twice");
-
-        mAnalytics = GoogleAnalytics.getInstance(context);
-        if (BuildConfig.DEBUG) {
-            mAnalytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
-            mAnalytics.setDryRun(true);
-        }
-
-        mTracker = mAnalytics.newTracker(R.xml.analytics_config);
-
-        onAppCreate();
-    }
+//    private static GoogleAnalytics mAnalytics;
+//    private static Tracker mTracker;
+//
+//    public static void init(Context context) {
+//        Preconditions.checkState(mAnalytics == null, "can't init twice");
+//
+//        mAnalytics = GoogleAnalytics.getInstance(context);
+//        if (BuildConfig.DEBUG) {
+//            mAnalytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
+//            mAnalytics.setDryRun(true);
+//        }
+//
+//        mTracker = mAnalytics.newTracker(R.xml.analytics_config);
+//
+//        onAppCreate();
+//    }
 
     public static void onAppCreate() {
-        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.APP, Action.CREATE).build();
-        mTracker.send(hit);
+//        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.APP, Action.CREATE).build();
+//        mTracker.send(hit);
     }
 
     public static void onTopicSwitchReply(boolean isShow) {
-        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.SWITCH_REPLY)
-                .setLabel(isShow ? Label.SHOW : Label.HIDE).build();
-        mTracker.send(hit);
+//        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.SWITCH_REPLY)
+//                .setLabel(isShow ? Label.SHOW : Label.HIDE).build();
+//        mTracker.send(hit);
     }
 
     public static void onTopicReply() {
-        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.REPLY).build();
-        mTracker.send(hit);
+//        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.REPLY).build();
+//        mTracker.send(hit);
     }
 
     public static void onSearch() {
-        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.APP, Action.SEARCH).build();
-        mTracker.send(hit);
+//        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.APP, Action.SEARCH).build();
+//        mTracker.send(hit);
     }
 
     public static void onParseTopic(long time, String label) {
-        final HitBuilders.TimingBuilder builder = new HitBuilders.TimingBuilder(Category.TOPIC, Action.PARSE_TOPIC, time);
-        if (label != null) {
-            builder.setLabel(label);
-        }
-        final Map<String, String> hit = builder.build();
-        mTracker.send(hit);
+//        final HitBuilders.TimingBuilder builder = new HitBuilders.TimingBuilder(Category.TOPIC, Action.PARSE_TOPIC, time);
+//        if (label != null) {
+//            builder.setLabel(label);
+//        }
+//        final Map<String, String> hit = builder.build();
+//        mTracker.send(hit);
     }
 
     public static void onTopicForceTouch() {
-        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.FORCE_TOUCH).build();
-        mTracker.send(hit);
+//        final Map<String, String> hit = new HitBuilders.EventBuilder(Category.TOPIC, Action.FORCE_TOUCH).build();
+//        mTracker.send(hit);
     }
 
     private static class Category {

@@ -4,10 +4,10 @@ import android.annotation.TargetApi
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.LightingColorFilter
 import android.graphics.Outline
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +17,6 @@ import android.support.design.widget.NavigationView
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentTransaction
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.support.v4.view.ViewCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
@@ -29,18 +28,14 @@ import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.GlideDrawable
-import com.bumptech.glide.request.animation.GlideAnimation
-import com.bumptech.glide.request.target.ViewTarget
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.czbix.v2ex.AppCtx
 import com.czbix.v2ex.BuildConfig
 import com.czbix.v2ex.R
 import com.czbix.v2ex.common.NotificationStatus
 import com.czbix.v2ex.common.UpdateInfo
 import com.czbix.v2ex.common.UserState
-import com.czbix.v2ex.common.exception.ConnectionException
-import com.czbix.v2ex.common.exception.RemoteException
 import com.czbix.v2ex.event.AppUpdateEvent
 import com.czbix.v2ex.event.BaseEvent.DailyAwardEvent
 import com.czbix.v2ex.event.BaseEvent.NewUnreadEvent
@@ -48,7 +43,7 @@ import com.czbix.v2ex.eventbus.LoginEvent
 import com.czbix.v2ex.helper.RxBus
 import com.czbix.v2ex.model.Member
 import com.czbix.v2ex.model.Node
-import com.czbix.v2ex.model.loader.GooglePhotoUrlLoader
+import com.czbix.v2ex.network.GlideApp
 import com.czbix.v2ex.network.RequestHelper
 import com.czbix.v2ex.presenter.TopicSearchPresenter
 import com.czbix.v2ex.res.GoogleImg
@@ -190,13 +185,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun updateNavBackground() {
         val url = GoogleImg.ALL_LOCATION[GoogleImg.getRandomLocationIndex()][GoogleImg.getCurrentTimeIndex()]
-        Glide.with(this).using(GooglePhotoUrlLoader.getInstance()).load(url).crossFade().centerCrop().into(object : ViewTarget<View, GlideDrawable>(mNavBg) {
-            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-            override fun onResourceReady(resource: GlideDrawable, glideAnimation: GlideAnimation<in GlideDrawable>) {
-                resource.colorFilter = LightingColorFilter(Color.rgb(180, 180, 180), 0)
-                ViewUtils.setBackground(mNavBg, resource)
-            }
-        })
+        GlideApp.with(this)
+//                .using(GooglePhotoUrlLoader.getInstance())
+                .load(url)
+                .centerCrop()
+                .into(object : SimpleTarget<Drawable>() {
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        resource.colorFilter = LightingColorFilter(Color.rgb(180, 180, 180), 0)
+                        ViewUtils.setBackground(mNavBg, resource)
+                    }
+                })
     }
 
     fun onDailyMissionEvent(e: DailyAwardEvent) {
@@ -390,19 +388,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         mAvatar.visibility = View.VISIBLE
         val avatar = UserUtils.getAvatar()
-        val request = Glide.with(this).load(avatar.getUrlByDp(resources.getDimension(R.dimen.nav_avatar_size)))
-        if (MiscUtils.HAS_L) {
-            request.crossFade().into(mAvatar)
-        } else {
-            // crop bitmap manually
-            request.asBitmap().into(object : ViewTarget<ImageView, Bitmap>(mAvatar) {
-                override fun onResourceReady(resource: Bitmap, glideAnimation: GlideAnimation<in Bitmap>) {
-                    val drawable = RoundedBitmapDrawableFactory.create(resources, resource)
-                    drawable.isCircular = true
-                    mAvatar.setImageDrawable(drawable)
-                }
-            })
-        }
+        val request = GlideApp.with(this).load(avatar.getUrlByDp(resources.getDimension(R.dimen.nav_avatar_size)))
+        request.circleCrop().into(mAvatar)
         mUsername.text = UserState.username
     }
 

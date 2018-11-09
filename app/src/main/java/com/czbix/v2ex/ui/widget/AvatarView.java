@@ -4,10 +4,10 @@ import android.content.Context;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
-import com.bumptech.glide.Glide;
 import com.czbix.v2ex.R;
 import com.czbix.v2ex.model.Avatar;
 import com.czbix.v2ex.model.Member;
+import com.czbix.v2ex.network.GlideApp;
 
 public class AvatarView extends AppCompatImageView {
     private int mRealSize;
@@ -37,8 +37,8 @@ public class AvatarView extends AppCompatImageView {
     public void setAvatar(Avatar avatar) {
         final int size = getRealSize();
         final String url = avatar.getUrlByPx(size);
-        Glide.with(getContext()).load(url).placeholder(R.drawable.avatar_default)
-                .override(size, size).fitCenter().crossFade().into(this);
+        GlideApp.with(getContext()).load(url).placeholder(R.drawable.avatar_default)
+                .override(size, size).fitCenter().into(this);
     }
 
     public interface OnAvatarActionListener {

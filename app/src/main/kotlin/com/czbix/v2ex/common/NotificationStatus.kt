@@ -1,7 +1,7 @@
 package com.czbix.v2ex.common
 
+import android.app.Application
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.support.annotation.IntDef
 import android.support.v4.app.NotificationCompat
@@ -12,14 +12,13 @@ import com.czbix.v2ex.event.BaseEvent.NewUnreadEvent
 import com.czbix.v2ex.helper.RxBus
 import com.czbix.v2ex.ui.MainActivity
 import com.czbix.v2ex.util.MiscUtils
-import com.google.common.eventbus.Subscribe
 
 object NotificationStatus {
-    private val context: Context
+    private val context: Application
     private val mNtfManager: NotificationManagerCompat
 
     @Retention(AnnotationRetention.SOURCE)
-    @IntDef(ID_NOTIFICATIONS.toLong(), ID_APP_UPDATE.toLong())
+    @IntDef(ID_NOTIFICATIONS, ID_APP_UPDATE)
     annotation class NotificationId
 
     const val ID_NOTIFICATIONS = 0

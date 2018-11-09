@@ -31,7 +31,6 @@ import android.view.ViewStub;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.czbix.v2ex.AppCtx;
 import com.czbix.v2ex.R;
 import com.czbix.v2ex.common.PrefStore;
@@ -89,7 +88,8 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         LoaderManager.LoaderCallbacks<LoaderResult<TopicWithComments>>,
         ReplyFormHelper.OnReplyListener, CommentView.OnCommentActionListener,
         HtmlMovementMethod.OnHtmlActionListener, NodeListFragment.OnNodeActionListener,
-        AvatarView.OnAvatarActionListener {
+        AvatarView.OnAvatarActionListener,
+        TopicActivity.ScrollToTopCallback {
     private static final String TAG = TopicFragment.class.getSimpleName();
     private static final String ARG_TOPIC = "topic";
     private static final int[] MENU_REQUIRED_LOGGED_IN = {R.id.action_ignore, R.id.action_reply,
@@ -97,7 +97,7 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
 
     private Topic mTopic;
     private SwipeRefreshLayout mLayout;
-    private RecyclerView mCommentsView;
+    private RecyclerView mCommentsRecyclerView;
     private CommentAdapter mCommentAdapter;
     private ReplyFormHelper mReplyForm;
     private String mCsrfToken;
@@ -158,14 +158,14 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         final View rootView = inflater.inflate(R.layout.fragment_topic, container, false);
         initJumpBackButton(rootView);
 
-        mLayout = ((SwipeRefreshLayout) rootView.findViewById(R.id.comments_layout));
+        mLayout = rootView.findViewById(R.id.comments_layout);
         mLayout.setColorSchemeResources(R.color.material_blue_grey_500, R.color.material_blue_grey_700, R.color.material_blue_grey_900);
         mLayout.setOnRefreshListener(this);
 
-        mCommentsView = (RecyclerView) mLayout.findViewById(R.id.comments);
+        mCommentsRecyclerView = mLayout.findViewById(R.id.comments);
 
         if (!mTopic.hasInfo()) {
-            mCommentsView.setVisibility(View.INVISIBLE);
+            mCommentsRecyclerView.setVisibility(View.INVISIBLE);
         }
 
         return rootView;
@@ -173,17 +173,17 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
 
     private void initCommentsView(TopicActivity activity) {
         mCommentsLayoutManager = new LinearLayoutManager(activity);
-        mCommentsView.setLayoutManager(mCommentsLayoutManager);
-        mCommentsView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL_LIST));
+        mCommentsRecyclerView.setLayoutManager(mCommentsLayoutManager);
+        mCommentsRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL_LIST));
 
         mCommentAdapter = new CommentAdapter(this, this, this, this);
         mCommentAdapter.setTopic(mTopic);
         mCommentAdapter.setDataSource(mComments);
-        mCommentsView.setAdapter(mCommentAdapter);
-        mCommentsView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+        mCommentsRecyclerView.setAdapter(mCommentAdapter);
+        mCommentsRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
             public void onChildViewAttachedToWindow(View view) {
-                loadNextPageIfNeed(mCommentAdapter.getItemCount(), mCommentsView.getChildAdapterPosition(view));
+                loadNextPageIfNeed(mCommentAdapter.getItemCount(), mCommentsRecyclerView.getChildAdapterPosition(view));
             }
 
             @Override
@@ -194,7 +194,7 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     }
 
     private void initJumpBackButton(View rootView) {
-        mJumpBack = ((ImageButton) rootView.findViewById(R.id.btn_jump_back));
+        mJumpBack = rootView.findViewById(R.id.btn_jump_back);
         mJumpBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -377,7 +377,7 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
     @Override
     public Loader<LoaderResult<TopicWithComments>> onCreateLoader(int id, Bundle args) {
         String log = String.format("load topic, id: %d, title: %s", mTopic.getId(), mTopic.getTitle());
-        Crashlytics.log(log);
+//        Crashlytics.log(log);
         LogUtils.d(TAG, log);
         return new TopicLoader(getActivity(), mTopic);
     }
@@ -392,7 +392,7 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         final TopicWithComments data = result.mResult;
         if (!mIsLoaded) {
             if (!mTopic.hasInfo()) {
-                mCommentsView.setVisibility(View.VISIBLE);
+                mCommentsRecyclerView.setVisibility(View.VISIBLE);
             }
             if (data.mLastReadPos > 0) {
                 // add one for topic in header
@@ -732,8 +732,8 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         mLastFocusPos = curPos;
         updateJumpBackButton();
 
-        mCommentsView.scrollToPosition(destPos);
-        mCommentsView.postDelayed(new Runnable() {
+        mCommentsRecyclerView.scrollToPosition(destPos);
+        mCommentsRecyclerView.postDelayed(new Runnable() {
             @Override
             public void run() {
                 View view = mCommentsLayoutManager.findViewByPosition(destPos);
@@ -822,5 +822,12 @@ public class TopicFragment extends Fragment implements SwipeRefreshLayout.OnRefr
 
     private void updateJumpBackButton() {
         mJumpBack.setVisibility(mLastFocusPos == NO_POSITION ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    public void scrollToTop() {
+        if (mCommentsRecyclerView != null) {
+            mCommentsRecyclerView.smoothScrollToPosition(0);
+        }
     }
 }

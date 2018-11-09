@@ -11,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.Toast
-import com.crashlytics.android.Crashlytics
 import com.czbix.v2ex.AppCtx
 import com.czbix.v2ex.R
 import com.czbix.v2ex.common.UserState
@@ -139,10 +138,10 @@ class TopicListFragment : Fragment(), LoaderCallbacks<LoaderResult<TopicListLoad
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<LoaderResult<TopicListLoader.TopicList>> {
         val log = String.format("load list: %s", mPage.title)
-        Crashlytics.log(log)
+//        Crashlytics.log(log)
         LogUtils.d(TAG, log)
 
-        return TopicListLoader(activity, mPage)
+        return TopicListLoader(requireContext(), mPage)
     }
 
     override fun onLoadFinished(loader: Loader<LoaderResult<TopicListLoader.TopicList>>, result: LoaderResult<TopicListLoader.TopicList>) {
@@ -158,7 +157,7 @@ class TopicListFragment : Fragment(), LoaderCallbacks<LoaderResult<TopicListLoad
             mAdapter.setDataSource(it)
         }
 
-        activity.invalidateOptionsMenu()
+        requireActivity().invalidateOptionsMenu()
     }
 
     private fun handleLoadException(ex: Exception) {

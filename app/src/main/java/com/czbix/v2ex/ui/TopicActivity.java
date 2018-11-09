@@ -3,21 +3,29 @@ package com.czbix.v2ex.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
-import android.support.v7.widget.Toolbar;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.czbix.v2ex.R;
 import com.czbix.v2ex.model.Topic;
 import com.czbix.v2ex.ui.fragment.TopicFragment;
-import com.czbix.v2ex.util.CrashlyticsUtils;
+import com.czbix.v2ex.util.FastClickUtil;
 import com.czbix.v2ex.util.ViewUtils;
 import com.google.common.base.Strings;
 
+/**
+ * 帖子详情页
+ */
 public class TopicActivity extends BaseActivity {
     private static final String TAG = TopicActivity.class.getSimpleName();
+
+    public interface ScrollToTopCallback {
+        void scrollToTop();
+    }
 
     public static final String KEY_TOPIC = "topic";
     public static final String KEY_TOPIC_ID = "topic_id";
@@ -28,7 +36,20 @@ public class TopicActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_topic);
         ViewUtils.initToolbar(this);
-        mAppBarLayout = ((AppBarLayout) findViewById(R.id.appbar));
+        mAppBarLayout = findViewById(R.id.appbar);
+
+        mAppBarLayout.getChildAt(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (FastClickUtil.isFastDoubleClick(2000)) {
+                    Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment);
+                    if (f instanceof ScrollToTopCallback) {
+                        ((ScrollToTopCallback) f).scrollToTop();
+                    }
+
+                }
+            }
+        });
 
         if (savedInstanceState == null) {
             Topic topic = getTopicFromIntent();

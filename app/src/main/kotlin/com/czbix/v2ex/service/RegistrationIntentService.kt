@@ -1,10 +1,10 @@
 package com.czbix.v2ex.service
 
+//import com.crashlytics.android.Crashlytics
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import com.crashlytics.android.Crashlytics
 import com.czbix.v2ex.common.PrefStore
 import com.czbix.v2ex.common.UserState
 import com.czbix.v2ex.common.exception.ConnectionException
@@ -15,10 +15,9 @@ import com.czbix.v2ex.event.DeviceRegisterEvent
 import com.czbix.v2ex.helper.RxBus
 import com.czbix.v2ex.network.CzRequestHelper
 import com.czbix.v2ex.network.RequestHelper
-import com.czbix.v2ex.util.CrashlyticsUtils
 import com.czbix.v2ex.util.LogUtils
 import com.google.common.base.Strings
-import com.google.firebase.iid.FirebaseInstanceId
+//import com.google.firebase.iid.FirebaseInstanceId
 
 class RegistrationIntentService : IntentService(TAG) {
     private lateinit var mPreferences: SharedPreferences
@@ -51,7 +50,7 @@ class RegistrationIntentService : IntentService(TAG) {
         synchronized(TAG) {
             var token: String? = null
             try {
-                token = FirebaseInstanceId.getInstance().token
+//                token = FirebaseInstanceId.getInstance().token
                 LogUtils.d(TAG, "FCM Registration Token: %s", token)
             } catch (e: Exception) {
                 LogUtils.w(TAG, "Failed to complete token refresh", e)
@@ -108,7 +107,7 @@ class RegistrationIntentService : IntentService(TAG) {
                 }
                 is RequestException -> {
                     if (e.isShouldLogged) {
-                        Crashlytics.logException(e)
+//                        Crashlytics.logException(e)
                     }
                 }
                 is RemoteException -> {}

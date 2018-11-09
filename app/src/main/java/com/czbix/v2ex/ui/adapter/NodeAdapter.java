@@ -8,10 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.czbix.v2ex.R;
 import com.czbix.v2ex.model.Avatar;
 import com.czbix.v2ex.model.Node;
+import com.czbix.v2ex.network.GlideApp;
 import com.czbix.v2ex.ui.fragment.NodeListFragment;
 import com.czbix.v2ex.util.ViewUtils;
 import com.google.common.base.Strings;
@@ -121,7 +121,8 @@ public class NodeAdapter extends RecyclerView.Adapter<NodeAdapter.ViewHolder> {
             }
 
             final float dimen = mAvatar.getResources().getDimension(R.dimen.node_avatar_size);
-            Glide.with(mAvatar.getContext()).load(avatar.getUrlByDp(dimen)).crossFade()
+            GlideApp.with(mAvatar.getContext())
+                    .load(avatar.getUrlByDp(dimen))
                     .into(mAvatar);
         }
     }

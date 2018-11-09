@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
@@ -11,8 +12,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.GlideDrawable
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.czbix.v2ex.R
@@ -23,6 +24,7 @@ import com.czbix.v2ex.google.GoogleHelper
 import com.czbix.v2ex.helper.CustomTabsHelper
 import com.czbix.v2ex.helper.RxBus
 import com.czbix.v2ex.model.LoginResult
+import com.czbix.v2ex.network.GlideApp
 import com.czbix.v2ex.network.RequestHelper
 import com.czbix.v2ex.parser.Parser
 import com.czbix.v2ex.ui.fragment.TwoFactorAuthDialog
@@ -33,7 +35,6 @@ import com.czbix.v2ex.util.getLogTag
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.lang.Exception
 
 /**
  * A login screen that offers login via account/password.
@@ -52,14 +53,14 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
     private lateinit var mLoginFormView: View
 
     private var mSignInFormData: Parser.SignInFormData? = null
-    private lateinit var captchaListener: RequestListener<String, GlideDrawable>
+    private lateinit var captchaListener: RequestListener<Drawable>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        mAccountView = findViewById(R.id.account) as EditText
-        mPwdView = findViewById(R.id.password) as EditText
+        mAccountView = findViewById(R.id.account)
+        mPwdView = findViewById(R.id.password)
         mPwdView.setOnEditorActionListener(object : TextView.OnEditorActionListener {
             private val mActionIdSignIn = resources.getInteger(R.integer.id_action_sign)
 
@@ -71,9 +72,9 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
                 return false
             }
         })
-        mLoadCaptchaView = findViewById(R.id.load_captcha) as Button
-        mCaptchaImageView = findViewById(R.id.image_captcha) as ImageView
-        mCaptchaView = findViewById(R.id.captcha) as EditText
+        mLoadCaptchaView = findViewById(R.id.load_captcha)
+        mCaptchaImageView = findViewById(R.id.image_captcha)
+        mCaptchaView = findViewById(R.id.captcha)
 
         arrayOf(
                 R.id.sign_in,
@@ -93,15 +94,15 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
             (it as TwoFactorAuthDialog).dismiss()
         }
 
-        captchaListener = object : RequestListener<String, GlideDrawable> {
-            override fun onException(e: Exception?, model: String?, target: Target<GlideDrawable>?, isFirstResource: Boolean): Boolean {
-                LogUtils.d(TAG, "Load captcha image failed, url: $model.", e)
-                Toast.makeText(this@LoginActivity, R.string.toast_load_captcha_failed,
-                        Toast.LENGTH_SHORT).show()
+        captchaListener = object : RequestListener<Drawable> {
+            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
                 return false
             }
 
-            override fun onResourceReady(resource: GlideDrawable?, model: String?, target: Target<GlideDrawable>?, isFromMemoryCache: Boolean, isFirstResource: Boolean): Boolean {
+            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                LogUtils.d(TAG, "Load captcha image failed, url: $model.", e)
+                Toast.makeText(this@LoginActivity, R.string.toast_load_captcha_failed,
+                        Toast.LENGTH_SHORT).show()
                 return false
             }
         }
@@ -131,7 +132,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
                     mLoadCaptchaView.visibility = View.GONE
 
                     val captchaUrl = RequestHelper.getCaptchaImageUrl(signInFormData.once)
-                    Glide.with(this).load(captchaUrl).listener(captchaListener)
+                    GlideApp.with(this).load(captchaUrl).listener(captchaListener)
                             .placeholder(placeholder).error(fallback).dontAnimate()
                             .into(mCaptchaImageView)
                 }, {

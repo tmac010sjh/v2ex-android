@@ -1,6 +1,9 @@
 package com.czbix.v2ex
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.support.multidex.MultiDex
 import com.crashlytics.android.Crashlytics
 import com.crashlytics.android.core.CrashlyticsCore
 import com.czbix.v2ex.common.NotificationStatus
@@ -20,7 +23,10 @@ import com.czbix.v2ex.google.GoogleHelper
 import com.czbix.v2ex.network.CzRequestHelper
 import com.czbix.v2ex.network.Etag
 import com.czbix.v2ex.network.RequestHelper
-import com.czbix.v2ex.util.*
+import com.czbix.v2ex.util.ExecutorUtils
+import com.czbix.v2ex.util.LogUtils
+import com.czbix.v2ex.util.UserUtils
+import com.czbix.v2ex.util.getLogTag
 import com.google.common.eventbus.AsyncEventBus
 import com.google.common.eventbus.DeadEvent
 import com.google.common.eventbus.EventBus
@@ -41,6 +47,11 @@ class AppCtx : Application() {
         init()
     }
 
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        MultiDex.install(this)
+    }
+
     private fun initCrashlytics() {
         val builder = Crashlytics.Builder().core(CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
         Fabric.with(this, builder.build())
@@ -51,7 +62,7 @@ class AppCtx : Application() {
         mEventBus = AsyncEventBus(HandlerExecutor())
         mEventBus.register(this)
 
-        TrackerUtils.init(this)
+//        TrackerUtils.init(this)
         ExecutorUtils.execute(AsyncInitTask())
     }
 
@@ -90,6 +101,7 @@ class AppCtx : Application() {
             updateGCMToken()
         }
 
+        @SuppressLint("CheckResult")
         private fun loadAllNodes() {
             val etagStr = ConfigDao.get(ConfigDao.KEY_NODE_ETAG, getString(R.string.all_nodes_etag))
 
@@ -112,6 +124,7 @@ class AppCtx : Application() {
             })
         }
 
+        @SuppressLint("CheckResult")
         private fun updateServerConfig() {
             CzRequestHelper.getServerConfig().observeOn(Schedulers.computation()).subscribe({ config ->
                 UpdateInfo.parseVersionData(config.version)

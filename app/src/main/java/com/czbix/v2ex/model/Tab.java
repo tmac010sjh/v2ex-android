@@ -1,6 +1,7 @@
 package com.czbix.v2ex.model;
 
 import android.os.Parcel;
+import android.text.TextUtils;
 
 import com.czbix.v2ex.network.RequestHelper;
 import com.google.common.base.Function;
@@ -95,8 +96,8 @@ public class Tab extends Page {
         if (this == o) return true;
         if (!(o instanceof Tab)) return false;
         Tab tab = (Tab) o;
-        return Objects.equal(mTitle, tab.mTitle) &&
-                Objects.equal(mKey, tab.mKey);
+        return TextUtils.equals(mTitle, tab.mTitle) &&
+                TextUtils.equals(mKey, tab.mKey);
     }
 
     @Override
