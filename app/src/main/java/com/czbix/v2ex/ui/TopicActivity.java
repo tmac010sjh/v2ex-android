@@ -38,7 +38,7 @@ public class TopicActivity extends BaseActivity {
         ViewUtils.initToolbar(this);
         mAppBarLayout = findViewById(R.id.appbar);
 
-        mAppBarLayout.getChildAt(0).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.toolbar).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (FastClickUtil.isFastDoubleClick(2000)) {

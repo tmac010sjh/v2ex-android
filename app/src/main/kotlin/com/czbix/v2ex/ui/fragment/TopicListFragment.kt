@@ -41,7 +41,15 @@ import com.czbix.v2ex.util.dispose
 import com.google.common.net.HttpHeaders
 import io.reactivex.disposables.Disposable
 
-class TopicListFragment : Fragment(), LoaderCallbacks<LoaderResult<TopicListLoader.TopicList>>, SwipeRefreshLayout.OnRefreshListener, OnTopicActionListener {
+class TopicListFragment : Fragment(),
+        LoaderCallbacks<LoaderResult<TopicListLoader.TopicList>>,
+        SwipeRefreshLayout.OnRefreshListener,
+        OnTopicActionListener,TopicActivity.ScrollToTopCallback {
+
+    override fun scrollToTop() {
+        mRecyclerView.smoothScrollToPosition(0)
+    }
+
     private lateinit var mPage: Page
 
     private lateinit var mAdapter: TopicAdapter

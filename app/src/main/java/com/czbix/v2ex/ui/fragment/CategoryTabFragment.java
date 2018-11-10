@@ -15,12 +15,17 @@ import com.czbix.v2ex.R;
 import com.czbix.v2ex.common.PrefStore;
 import com.czbix.v2ex.model.Tab;
 import com.czbix.v2ex.ui.MainActivity;
+import com.czbix.v2ex.ui.TopicActivity;
 import com.google.common.base.Preconditions;
 
 import java.util.List;
 
-public class CategoryTabFragment extends BaseTabFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class CategoryTabFragment extends BaseTabFragment
+        implements SharedPreferences.OnSharedPreferenceChangeListener ,
+        TopicActivity.ScrollToTopCallback {
+
     private boolean isTabsChanged;
+    private CategoryFragmentAdapter mFragmentAdapter;
 
     public static CategoryTabFragment newInstance() {
         return new CategoryTabFragment();
@@ -28,7 +33,8 @@ public class CategoryTabFragment extends BaseTabFragment implements SharedPrefer
 
     @Override
     protected FragmentPagerAdapter getAdapter(FragmentManager manager) {
-        return new CategoryFragmentAdapter(manager);
+        mFragmentAdapter = new CategoryFragmentAdapter(manager);
+        return mFragmentAdapter;
     }
 
     @Override
@@ -37,6 +43,7 @@ public class CategoryTabFragment extends BaseTabFragment implements SharedPrefer
 
         //noinspection ConstantConditions
         final TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
+//        tabLayout.
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
         // XXX: TabLayout support tabContentStart, but no tabContentEnd, so set the padding manually
@@ -88,13 +95,30 @@ public class CategoryTabFragment extends BaseTabFragment implements SharedPrefer
         }
     }
 
+    @Override
+    public void scrollToTop() {
+        Fragment target = mFragmentAdapter.getChosenFragment();
+        if (target instanceof TopicActivity.ScrollToTopCallback) {
+            ((TopicActivity.ScrollToTopCallback) target).scrollToTop();
+        }
+    }
+
     private class CategoryFragmentAdapter extends FragmentPagerAdapter {
         private final List<Tab> mTabs;
 
         public CategoryFragmentAdapter(FragmentManager manager) {
             super(manager);
-
             mTabs = PrefStore.getInstance().getTabsToShow();
+        }
+
+        public Fragment getChosenFragment() {
+            List<Fragment> fragments = getChildFragmentManager().getFragments();
+            for (Fragment fragment : fragments) {
+                if (fragment.getUserVisibleHint()) {
+                    return fragment;
+                }
+            }
+            return null;
         }
 
         public Fragment getItem(int position) {

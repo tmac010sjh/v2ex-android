@@ -78,24 +78,38 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mAppBar = findViewById(R.id.appbar) as AppBarLayout
-        mDrawerLayout = findViewById(R.id.drawer_layout) as DrawerLayout
+        mAppBar = findViewById(R.id.appbar)
+        mDrawerLayout = findViewById(R.id.drawer_layout)
 
-        mNav = findViewById(R.id.nav) as NavigationView
+        mNav = findViewById(R.id.nav)
 
         val headerView = mNav.getHeaderView(0)
         mNavBg = headerView.findViewById(R.id.nav_layout)
         mAvatar = headerView.findViewById(R.id.avatar_img) as ImageView
         mUsername = headerView.findViewById(R.id.username_tv) as TextView
         mAwardButton = headerView.findViewById(R.id.award)
-        val searchBox = findViewById(R.id.search_box) as SearchBoxLayout
+        val searchBox = findViewById<SearchBoxLayout>(R.id.search_box)
         mSearchPresenter = TopicSearchPresenter(this, searchBox)
 
         mToolbar = ViewUtils.initToolbar(this)
+        mToolbar?.setOnClickListener {
+            if (FastClickUtil.isFastDoubleClick(2000)) {
+                notifyTargetToScrollTop()
+            }
+        }
         initNavDrawer()
 
         supportFragmentManager.addOnBackStackChangedListener(this)
         switchFragment(getFragmentToShow(intent), false)
+    }
+
+    private fun notifyTargetToScrollTop() {
+        supportFragmentManager.fragments.forEach {
+            if (it.isVisible && it is TopicActivity.ScrollToTopCallback) {
+                it.scrollToTop()
+                return
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -368,7 +382,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private fun switchFragment(fragment: Fragment, addToBackStack: Boolean = true) {
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.setCustomAnimations(0, 0, R.anim.abc_fade_in, R.anim.abc_fade_out).replace(R.id.fragment, fragment)
+        fragmentTransaction
+                .setCustomAnimations(0, 0, R.anim.abc_fade_in, R.anim.abc_fade_out)
+                .replace(R.id.fragment, fragment)
         if (addToBackStack) {
             fragmentTransaction.addToBackStack(null)
         }
